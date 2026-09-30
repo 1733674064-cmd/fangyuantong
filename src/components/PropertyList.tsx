@@ -50,7 +50,9 @@ export const PropertyList: React.FC<PropertyListProps> = ({
   const [districtFilter, setDistrictFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState<'all' | PropertyStatus>('all');
   const [roomFilter, setRoomFilter] = useState<number | 'all'>('all');
-  const [viewMode, setViewMode] = useState<'grid' | 'table'>('table');
+  const [viewMode, setViewMode] = useState<'grid' | 'table'>(() =>
+    typeof window !== 'undefined' && window.innerWidth < 768 ? 'grid' : 'table'
+  );
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   // Multi-selection state

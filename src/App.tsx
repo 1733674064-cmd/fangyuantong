@@ -29,7 +29,10 @@ import {
 } from './utils/storage';
 
 // The public active URL for colleagues and friends
-const SHARED_APP_URL = 'https://ais-dev-odpmx6jxvldfunmlcjodyw-227691466509.us-east1.run.app';
+const SHARED_APP_URL =
+  typeof window !== 'undefined' && window.location.origin && !window.location.origin.includes('localhost') && !window.location.origin.includes('run.app')
+    ? window.location.origin
+    : 'https://fangyuantong-lddz.vercel.app';
 
 export default function App() {
   const [properties, setProperties] = useState<Property[]>(() => loadProperties());
@@ -279,7 +282,7 @@ export default function App() {
       )}
 
       {/* Main Content Area */}
-      <main className="flex-1 pb-16">
+      <main className="flex-1 pb-24 md:pb-16 px-1 sm:px-0">
         {activeTab === 'match' && (
           <MatchHub
             clients={clients}
@@ -357,7 +360,7 @@ export default function App() {
 
       {/* Toast Notification */}
       {toast && (
-        <div className="fixed bottom-5 right-5 z-50 animate-bounce duration-300">
+        <div className="fixed bottom-16 md:bottom-5 right-3 sm:right-5 z-50 animate-bounce duration-300">
           <div
             className={`px-4 py-2.5 rounded-lg shadow-lg text-xs font-semibold flex items-center gap-2 border ${
               toast.type === 'error'

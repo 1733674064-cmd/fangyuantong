@@ -112,6 +112,7 @@ export const ClientList: React.FC<ClientListProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [targetTypeFilter, setTargetTypeFilter] = useState<'all' | TransactionType>('all');
   const [urgencyFilter, setUrgencyFilter] = useState<'all' | ClientUrgency>('all');
+  const [mobileActiveStage, setMobileActiveStage] = useState<'all' | ClientStage>('all');
 
   // Multi-selection state
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -495,8 +496,51 @@ export const ClientList: React.FC<ClientListProps> = ({
 
       {/* View Mode 1: Kanban Board View */}
       {viewMode === 'kanban' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-start">
-          {KANBAN_STAGES.map((stage) => {
+        <div className="space-y-3">
+          {/* Mobile Stage Selector Tabs (Hidden on tablet/desktop) */}
+          <div className="md:hidden flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs">
+            <button
+              onClick={() => setMobileActiveStage('all')}
+              className={`px-3 py-1.5 rounded-lg whitespace-nowrap font-medium transition-colors cursor-pointer ${
+                mobileActiveStage === 'all'
+                  ? 'bg-indigo-600 text-white font-semibold shadow-xs'
+                  : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+              }`}
+            >
+              全部阶段 ({filteredClients.length})
+            </button>
+            {KANBAN_STAGES.map((s) => {
+              const count = filteredClients.filter(
+                (c) => getEffectiveStage(c.stage) === s.id
+              ).length;
+              const isActive = mobileActiveStage === s.id;
+              return (
+                <button
+                  key={s.id}
+                  onClick={() => setMobileActiveStage(s.id)}
+                  className={`px-3 py-1.5 rounded-lg whitespace-nowrap font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
+                    isActive
+                      ? 'bg-indigo-600 text-white font-semibold shadow-xs'
+                      : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+                  }`}
+                >
+                  <span>{s.label}</span>
+                  <span
+                    className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
+                      isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
+                    }`}
+                  >
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-start">
+            {KANBAN_STAGES.filter(
+              (stage) => mobileActiveStage === 'all' || stage.id === mobileActiveStage
+            ).map((stage) => {
             const columnClients = filteredClients.filter(
               (c) => getEffectiveStage(c.stage) === stage.id
             );
@@ -676,6 +720,7 @@ export const ClientList: React.FC<ClientListProps> = ({
               </div>
             );
           })}
+          </div>
         </div>
       ) : (
         /* View Mode 2: Detailed Cards Grid */

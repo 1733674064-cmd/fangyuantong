@@ -184,7 +184,7 @@ export const MatchHub: React.FC<MatchHubProps> = ({
 
         {/* Client Demand Snapshot */}
         {activeClient && (
-          <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 text-xs">
             <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
               <span className="text-slate-400 block mb-1">预算区间 & 需求类型</span>
               <div className="font-bold text-slate-900 text-sm font-mono tabular-nums">
@@ -467,7 +467,7 @@ export const MatchHub: React.FC<MatchHubProps> = ({
 
       {/* Floating Compare Toolbar */}
       {selectedForCompare.length > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 bg-slate-900 text-white px-5 py-3 rounded-full shadow-2xl flex items-center gap-4 border border-slate-700">
+        <div className="fixed bottom-16 md:bottom-6 left-1/2 -translate-x-1/2 z-40 bg-slate-900/95 backdrop-blur-md text-white px-4 sm:px-5 py-2.5 sm:py-3 rounded-full shadow-2xl flex items-center gap-2.5 sm:gap-4 border border-slate-700 max-w-[95vw] whitespace-nowrap">
           <div className="text-xs">
             已选择 <span className="font-bold text-indigo-400 font-mono">{selectedForCompare.length}</span> 套房源
           </div>
