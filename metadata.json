@@ -1,0 +1,6 @@
+{
+  "name": "房源客源智能分析工作台",
+  "description": "专为房产中介打造的高效房源客源分析与智能匹配工作台，支持房源录入删改、客源画像建档、多维度智能自动匹配与推房方案生成。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
