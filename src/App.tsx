@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Header } from './components/Header';
 import { MatchHub } from './components/MatchHub';
 import { PropertyList } from './components/PropertyList';
@@ -18,7 +18,10 @@ import { PropertyDetailModal } from './components/PropertyDetailModal';
 import { DataBackupModal } from './components/DataBackupModal';
 import { ShareModal } from './components/ShareModal';
 import { BeikeSyncModal } from './components/BeikeSyncModal';
-import { Property, Client, MatchResult, PropertyStatus, ClientStage } from './types';
+import { LoginModal } from './components/LoginModal';
+import { TeamManagementModal } from './components/TeamManagementModal';
+import { Property, Client, MatchResult, PropertyStatus, ClientStage, AppUser } from './types';
+import { getCurrentUser, INITIAL_TEAM_USERS } from './utils/auth';
 import {
   loadProperties,
   saveProperties,
@@ -61,6 +64,29 @@ export default function App() {
   const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isBeikeSyncModalOpen, setIsBeikeSyncModalOpen] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
+
+  // User Authentication & Data Isolation State
+  const [currentUser, setCurrentUser] = useState<AppUser>(() => getCurrentUser() || INITIAL_TEAM_USERS[0]);
+  const [adminScope, setAdminScope] = useState<'all' | 'mine'>('all');
+
+  // Filtered properties and clients based on current colleague's login and permissions
+  const visibleProperties = useMemo(() => {
+    if (!currentUser) return properties;
+    if (currentUser.role === 'admin' && adminScope === 'all') {
+      return properties;
+    }
+    return properties.filter((p) => p.createdBy === currentUser.id);
+  }, [properties, currentUser, adminScope]);
+
+  const visibleClients = useMemo(() => {
+    if (!currentUser) return clients;
+    if (currentUser.role === 'admin' && adminScope === 'all') {
+      return clients;
+    }
+    return clients.filter((c) => c.createdBy === currentUser.id);
+  }, [clients, currentUser, adminScope]);
 
   // Toast feedback
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null);
@@ -96,14 +122,19 @@ export default function App() {
 
   // 1. Property CRUD
   const handleSaveProperty = (property: Property) => {
-    const exists = properties.some((p) => p.id === property.id);
+    const propertyWithOwner: Property = {
+      ...property,
+      createdBy: property.createdBy || currentUser?.id || 'user-admin',
+      createdByName: property.createdByName || currentUser?.name || '店长 (超级管理员)',
+    };
+    const exists = properties.some((p) => p.id === propertyWithOwner.id);
     let updated: Property[];
     if (exists) {
-      updated = properties.map((p) => (p.id === property.id ? property : p));
-      showToast(`房源【${property.community}】更新成功`);
+      updated = properties.map((p) => (p.id === propertyWithOwner.id ? propertyWithOwner : p));
+      showToast(`房源【${propertyWithOwner.community}】更新成功`);
     } else {
-      updated = [property, ...properties];
-      showToast(`新房源【${property.community}】已成功录入`);
+      updated = [propertyWithOwner, ...properties];
+      showToast(`新房源【${propertyWithOwner.community}】已录入您的私有库`);
     }
     setProperties(updated);
     saveProperties(updated);
@@ -145,15 +176,20 @@ export default function App() {
 
   // 2. Client CRUD
   const handleSaveClient = (client: Client) => {
-    const exists = clients.some((c) => c.id === client.id);
+    const clientWithOwner: Client = {
+      ...client,
+      createdBy: client.createdBy || currentUser?.id || 'user-admin',
+      createdByName: client.createdByName || currentUser?.name || '店长 (超级管理员)',
+    };
+    const exists = clients.some((c) => c.id === clientWithOwner.id);
     let updated: Client[];
     if (exists) {
-      updated = clients.map((c) => (c.id === client.id ? client : c));
-      showToast(`客户【${client.name}】画像更新成功`);
+      updated = clients.map((c) => (c.id === clientWithOwner.id ? clientWithOwner : c));
+      showToast(`客户【${clientWithOwner.name}】画像更新成功`);
     } else {
-      updated = [client, ...clients];
-      showToast(`客户【${client.name}】已成功建档`);
-      setSelectedClientId(client.id);
+      updated = [clientWithOwner, ...clients];
+      showToast(`客户【${clientWithOwner.name}】已存入您的私有档案`);
+      setSelectedClientId(clientWithOwner.id);
     }
     setClients(updated);
     saveClients(updated);
@@ -274,8 +310,13 @@ export default function App() {
         onOpenBackupModal={() => setIsBackupModalOpen(true)}
         onOpenShareModal={() => setIsShareModalOpen(true)}
         onOpenBeikeSyncModal={() => setIsBeikeSyncModalOpen(true)}
-        propertiesCount={properties.length}
-        clientsCount={clients.length}
+        onOpenLoginModal={() => setIsLoginModalOpen(true)}
+        onOpenTeamModal={() => setIsTeamModalOpen(true)}
+        currentUser={currentUser}
+        adminScope={adminScope}
+        onToggleAdminScope={() => setAdminScope(adminScope === 'all' ? 'mine' : 'all')}
+        propertiesCount={visibleProperties.length}
+        clientsCount={visibleClients.length}
       />
 
       {storageBlocked && (
@@ -288,8 +329,8 @@ export default function App() {
       <main className="flex-1 pb-24 md:pb-16 px-1 sm:px-0">
         {activeTab === 'match' && (
           <MatchHub
-            clients={clients}
-            properties={properties}
+            clients={visibleClients}
+            properties={visibleProperties}
             selectedClientId={selectedClientId}
             onSelectClient={(id) => setSelectedClientId(id)}
             onOpenAddClient={() => {
@@ -305,7 +346,7 @@ export default function App() {
 
         {activeTab === 'properties' && (
           <PropertyList
-            properties={properties}
+            properties={visibleProperties}
             onOpenAddProperty={() => {
               setEditingProperty(null);
               setIsPropertyModalOpen(true);
@@ -328,7 +369,7 @@ export default function App() {
 
         {activeTab === 'clients' && (
           <ClientList
-            clients={clients}
+            clients={visibleClients}
             onOpenAddClient={() => {
               setEditingClient(null);
               setIsClientModalOpen(true);
@@ -347,8 +388,8 @@ export default function App() {
 
         {activeTab === 'dashboard' && (
           <DashboardStats
-            properties={properties}
-            clients={clients}
+            properties={visibleProperties}
+            clients={visibleClients}
             onSelectClientToMatch={handleStartMatchingById}
             onOpenAddProperty={() => {
               setEditingProperty(null);
@@ -469,6 +510,28 @@ export default function App() {
         isOpen={isBeikeSyncModalOpen}
         onClose={() => setIsBeikeSyncModalOpen(false)}
         onSaveProperty={handleSaveProperty}
+      />
+
+      {/* 10. Login & Switch Colleague Account Modal */}
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        onLoginSuccess={(u) => {
+          setCurrentUser(u);
+          showToast(`已成功登录：【${u.name}】的工作台！`);
+        }}
+      />
+
+      {/* 11. Team Management Modal */}
+      <TeamManagementModal
+        isOpen={isTeamModalOpen}
+        onClose={() => setIsTeamModalOpen(false)}
+        currentUser={currentUser}
+        onUsersUpdated={() => {
+          const updated = getCurrentUser();
+          if (updated) setCurrentUser(updated);
+          showToast('团队信息已更新！');
+        }}
       />
     </div>
   );

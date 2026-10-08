@@ -652,6 +652,12 @@ export const ClientList: React.FC<ClientListProps> = ({
                                   {client.preferredDistricts.join('/') || '不限'}
                                 </span>
                               </div>
+                              {client.createdByName && (
+                                <div className="flex items-center justify-between text-indigo-600 font-medium pt-0.5 border-t border-slate-100">
+                                  <span className="text-slate-400">归属:</span>
+                                  <span>{client.createdByName}</span>
+                                </div>
+                              )}
                             </div>
 
                             {/* Key tags */}

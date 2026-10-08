@@ -1,0 +1,97 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "门店同事与经纪人账号",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "用户唯一ID (uid)" },
+        "email": { "type": "string", "description": "登录邮箱/账号" },
+        "name": { "type": "string", "description": "经纪人姓名" },
+        "phone": { "type": "string", "description": "联系手机号" },
+        "role": { "type": "string", "enum": ["admin", "agent"], "description": "角色权限：管理员或经纪人" },
+        "createdAt": { "type": "string", "description": "创建时间" }
+      },
+      "required": ["id", "email", "name", "role"]
+    },
+    "Property": {
+      "title": "Property",
+      "description": "房源信息数据",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "房源ID" },
+        "title": { "type": "string", "description": "房源标题" },
+        "community": { "type": "string", "description": "小区名称" },
+        "district": { "type": "string", "description": "行政区/商圈" },
+        "type": { "type": "string", "enum": ["sale", "rent"], "description": "交易类型" },
+        "price": { "type": "number", "description": "挂牌价" },
+        "unitPrice": { "type": "number", "description": "单价" },
+        "rooms": { "type": "number", "description": "室数" },
+        "livingRooms": { "type": "number", "description": "厅数" },
+        "bathrooms": { "type": "number", "description": "卫数" },
+        "area": { "type": "number", "description": "建筑面积" },
+        "floor": { "type": "string", "description": "楼层" },
+        "totalFloors": { "type": "number", "description": "总楼层" },
+        "hasElevator": { "type": "boolean", "description": "是否有电梯" },
+        "orientation": { "type": "string", "description": "朝向" },
+        "decoration": { "type": "string", "description": "装修档次" },
+        "tags": { "type": "array", "description": "特色标签" },
+        "highlights": { "type": "string", "description": "核心卖点" },
+        "ownerName": { "type": "string", "description": "业主姓名" },
+        "ownerPhone": { "type": "string", "description": "业主联系方式" },
+        "minPrice": { "type": "number", "description": "业主底价" },
+        "status": { "type": "string", "description": "在售状态" },
+        "beikeHouseCode": { "type": "string", "description": "贝壳/A+房源编码" },
+        "beikeUrl": { "type": "string", "description": "贝壳原始链接" },
+        "isBeikeSynced": { "type": "boolean", "description": "是否同步自贝壳" },
+        "createdBy": { "type": "string", "description": "添加此房源的经纪人用户ID" },
+        "createdByName": { "type": "string", "description": "添加人姓名" },
+        "createdAt": { "type": "string", "description": "录入时间" },
+        "updatedAt": { "type": "string", "description": "更新时间" }
+      },
+      "required": ["id", "title", "community", "district", "type", "price", "rooms", "area", "createdBy"]
+    },
+    "Client": {
+      "title": "Client",
+      "description": "客户画像与找房需求数据",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "客户ID" },
+        "name": { "type": "string", "description": "客户称呼" },
+        "phone": { "type": "string", "description": "联系方式" },
+        "wechat": { "type": "string", "description": "微信号" },
+        "clientType": { "type": "string", "description": "客户属性" },
+        "targetType": { "type": "string", "enum": ["sale", "rent"], "description": "求购或求租" },
+        "minBudget": { "type": "number", "description": "最低预算" },
+        "maxBudget": { "type": "number", "description": "最高预算" },
+        "preferredDistricts": { "type": "array", "description": "意向区域" },
+        "preferredRooms": { "type": "array", "description": "居室要求" },
+        "minArea": { "type": "number", "description": "最低面积" },
+        "keyRequirements": { "type": "array", "description": "核心需求标签" },
+        "urgency": { "type": "string", "description": "紧迫程度" },
+        "familyNotes": { "type": "string", "description": "家庭背景与买房动机" },
+        "stage": { "type": "string", "description": "跟进阶段" },
+        "notes": { "type": "string", "description": "跟进备忘录" },
+        "createdBy": { "type": "string", "description": "录入此客户的经纪人用户ID" },
+        "createdByName": { "type": "string", "description": "经纪人姓名" },
+        "createdAt": { "type": "string", "description": "录入时间" },
+        "updatedAt": { "type": "string", "description": "更新时间" }
+      },
+      "required": ["id", "name", "phone", "targetType", "minBudget", "maxBudget", "stage", "createdBy"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "经纪人与管理员用户账户信息"
+    },
+    "/properties/{propertyId}": {
+      "schema": "Property",
+      "description": "房源库数据，按 createdBy 隔离或管理员全览"
+    },
+    "/clients/{clientId}": {
+      "schema": "Client",
+      "description": "客源库数据，按 createdBy 隔离或管理员全览"
+    }
+  }
+}

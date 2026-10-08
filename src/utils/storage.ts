@@ -27,17 +27,30 @@ export function loadProperties(): Property[] {
       try {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed)) {
-          return parsed; // Returns parsed data even if it has 0 items (user deleted all)
+          // Ensure ownership assigned
+          return parsed.map((p, idx) => {
+            if (!p.createdBy) {
+              if (idx % 3 === 1) return { ...p, createdBy: 'user-agent-1', createdByName: '王经纪' };
+              if (idx % 3 === 2) return { ...p, createdBy: 'user-agent-2', createdByName: '陈经纪' };
+              return { ...p, createdBy: 'user-admin', createdByName: '店长 (超级管理员)' };
+            }
+            return p;
+          });
         }
       } catch (err) {
         console.error('Failed to parse stored properties:', err);
       }
     }
 
-    // First time opening the workbench: initialize demo data
-    saveProperties(INITIAL_PROPERTIES);
+    // First time opening the workbench: initialize demo data with ownership
+    const initProps = INITIAL_PROPERTIES.map((p, idx) => {
+      if (idx % 3 === 1) return { ...p, createdBy: 'user-agent-1', createdByName: '王经纪' };
+      if (idx % 3 === 2) return { ...p, createdBy: 'user-agent-2', createdByName: '陈经纪' };
+      return { ...p, createdBy: 'user-admin', createdByName: '店长 (超级管理员)' };
+    });
+    saveProperties(initProps);
     localStorage.setItem(STORAGE_KEY_INITIALIZED, 'true');
-    return INITIAL_PROPERTIES;
+    return initProps;
   } catch (e) {
     console.error('Failed to load properties from storage:', e);
     return INITIAL_PROPERTIES;
@@ -64,17 +77,30 @@ export function loadClients(): Client[] {
       try {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed)) {
-          return parsed; // Returns parsed data even if it has 0 items
+          // Ensure ownership assigned
+          return parsed.map((c, idx) => {
+            if (!c.createdBy) {
+              if (idx % 3 === 1) return { ...c, createdBy: 'user-agent-1', createdByName: '王经纪' };
+              if (idx % 3 === 2) return { ...c, createdBy: 'user-agent-2', createdByName: '陈经纪' };
+              return { ...c, createdBy: 'user-admin', createdByName: '店长 (超级管理员)' };
+            }
+            return c;
+          });
         }
       } catch (err) {
         console.error('Failed to parse stored clients:', err);
       }
     }
 
-    // First time opening the workbench: initialize demo data
-    saveClients(INITIAL_CLIENTS);
+    // First time opening the workbench: initialize demo data with ownership
+    const initClients = INITIAL_CLIENTS.map((c, idx) => {
+      if (idx % 3 === 1) return { ...c, createdBy: 'user-agent-1', createdByName: '王经纪' };
+      if (idx % 3 === 2) return { ...c, createdBy: 'user-agent-2', createdByName: '陈经纪' };
+      return { ...c, createdBy: 'user-admin', createdByName: '店长 (超级管理员)' };
+    });
+    saveClients(initClients);
     localStorage.setItem(STORAGE_KEY_INITIALIZED, 'true');
-    return INITIAL_CLIENTS;
+    return initClients;
   } catch (e) {
     console.error('Failed to load clients from storage:', e);
     return INITIAL_CLIENTS;

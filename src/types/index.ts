@@ -10,6 +10,18 @@ export type ClientUrgency = 'urgent' | 'medium' | 'casual';
 
 export type ClientType = 'first_home' | 'upgrade' | 'tenant' | 'investor';
 
+export type UserRole = 'admin' | 'agent';
+
+export interface AppUser {
+  id: string;
+  username: string;
+  password?: string;
+  name: string;
+  role: UserRole;
+  phone?: string;
+  createdAt: string;
+}
+
 export interface Property {
   id: string;
   title: string;
@@ -42,6 +54,8 @@ export interface Property {
   beikeUrl?: string; // 贝壳原始房源网页链接或 A+ 分享地址
   isBeikeSynced?: boolean; // 标记是否同步自贝壳 A+
   lastSyncedAt?: string; // 最近同步或核验时间
+  createdBy?: string; // 归属经纪人ID
+  createdByName?: string; // 归属经纪人姓名
   createdAt: string;
   updatedAt: string;
 }
@@ -63,6 +77,8 @@ export interface Client {
   familyNotes: string; // 客户背景/家庭诉求备忘 (如家有老人、小孩上学)
   stage: ClientStage;
   notes?: string;
+  createdBy?: string; // 归属经纪人ID
+  createdByName?: string; // 归属经纪人姓名
   createdAt: string;
   updatedAt: string;
 }

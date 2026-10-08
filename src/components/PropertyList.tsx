@@ -629,8 +629,13 @@ export const PropertyList: React.FC<PropertyListProps> = ({
                       <td className="py-3 px-3 whitespace-nowrap">
                         <div className="text-slate-800">{p.ownerName}</div>
                         <div className="text-slate-400 font-mono text-[11px]">{p.ownerPhone}</div>
+                        {p.createdByName && (
+                          <div className="text-[10px] text-indigo-600 font-medium">
+                            录入人: {p.createdByName}
+                          </div>
+                        )}
                         {p.minPrice && (
-                          <div className="text-[10px] text-indigo-600 font-mono">
+                          <div className="text-[10px] text-slate-500 font-mono">
                             底价: {p.minPrice}{priceUnit}
                           </div>
                         )}
