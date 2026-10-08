@@ -18,6 +18,8 @@ import {
   CheckSquare,
   Square,
   SlidersHorizontal,
+  Link2,
+  ExternalLink,
 } from 'lucide-react';
 import { Property, TransactionType, PropertyStatus } from '../types';
 import { DISTRICT_OPTIONS } from '../utils/mockData';
@@ -25,6 +27,7 @@ import { DISTRICT_OPTIONS } from '../utils/mockData';
 interface PropertyListProps {
   properties: Property[];
   onOpenAddProperty: () => void;
+  onOpenBeikeSync?: () => void;
   onEditProperty: (property: Property) => void;
   onDeleteProperty: (id: string) => void;
   onBatchDeleteProperties: (ids: string[]) => void;
@@ -37,6 +40,7 @@ interface PropertyListProps {
 export const PropertyList: React.FC<PropertyListProps> = ({
   properties,
   onOpenAddProperty,
+  onOpenBeikeSync,
   onEditProperty,
   onDeleteProperty,
   onBatchDeleteProperties,
@@ -50,6 +54,7 @@ export const PropertyList: React.FC<PropertyListProps> = ({
   const [districtFilter, setDistrictFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState<'all' | PropertyStatus>('all');
   const [roomFilter, setRoomFilter] = useState<number | 'all'>('all');
+  const [onlyBeikeFilter, setOnlyBeikeFilter] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'table'>(() =>
     typeof window !== 'undefined' && window.innerWidth < 768 ? 'grid' : 'table'
   );
@@ -65,6 +70,7 @@ export const PropertyList: React.FC<PropertyListProps> = ({
   // Filtered properties
   const filteredProperties = useMemo(() => {
     return properties.filter((p) => {
+      if (onlyBeikeFilter && !p.isBeikeSynced && !p.beikeHouseCode) return false;
       if (typeFilter !== 'all' && p.type !== typeFilter) return false;
       if (districtFilter !== 'all' && !p.district.includes(districtFilter)) return false;
       if (statusFilter !== 'all' && p.status !== statusFilter) return false;
@@ -81,7 +87,7 @@ export const PropertyList: React.FC<PropertyListProps> = ({
       }
       return true;
     });
-  }, [properties, typeFilter, districtFilter, statusFilter, roomFilter, searchQuery]);
+  }, [properties, onlyBeikeFilter, typeFilter, districtFilter, statusFilter, roomFilter, searchQuery]);
 
   // Selection helpers
   const isAllSelected =
@@ -180,9 +186,19 @@ export const PropertyList: React.FC<PropertyListProps> = ({
             </button>
           </div>
 
+          {onOpenBeikeSync && (
+            <button
+              onClick={onOpenBeikeSync}
+              className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors shadow-2xs cursor-pointer"
+            >
+              <Link2 className="w-4 h-4 text-blue-600" />
+              <span>贝壳A+同步</span>
+            </button>
+          )}
+
           <button
             onClick={onOpenAddProperty}
-            className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors shadow-sm"
+            className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors shadow-sm cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>+ 录入新房源</span>
@@ -330,6 +346,19 @@ export const PropertyList: React.FC<PropertyListProps> = ({
                 <Square className="w-3.5 h-3.5 text-slate-400" />
               )}
               <span>{isAllSelected ? '取消全选' : `全选当前房源 (${filteredProperties.length})`}</span>
+            </button>
+
+            {/* Only Beike Filter Button */}
+            <button
+              onClick={() => setOnlyBeikeFilter(!onlyBeikeFilter)}
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-md border transition-colors cursor-pointer ${
+                onlyBeikeFilter
+                  ? 'border-blue-600 bg-blue-50 text-blue-700 font-semibold shadow-2xs'
+                  : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+              }`}
+            >
+              <Link2 className="w-3 h-3 text-blue-500" />
+              <span>仅看贝壳同步 ({properties.filter((p) => p.isBeikeSynced || p.beikeHouseCode).length})</span>
             </button>
           </div>
 
@@ -481,11 +510,35 @@ export const PropertyList: React.FC<PropertyListProps> = ({
                             />
                           ) : null}
                           <div className="min-w-0">
-                            <div className="font-semibold text-slate-900 line-clamp-1">{p.title}</div>
-                            <div className="text-[11px] text-slate-500 flex items-center gap-1.5 mt-0.5">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="font-semibold text-slate-900 line-clamp-1">{p.title}</span>
+                              {(p.isBeikeSynced || p.beikeHouseCode) && (
+                                <span className="inline-flex items-center gap-0.5 text-[9px] bg-blue-50 text-blue-700 border border-blue-200 font-bold px-1 rounded shrink-0">
+                                  贝壳ACN
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-[11px] text-slate-500 flex items-center gap-1.5 mt-0.5 flex-wrap">
                               <span className="font-medium text-indigo-700">{p.community}</span>
                               <span className="text-slate-300">·</span>
                               <span>{p.district}</span>
+                              {p.beikeHouseCode && (
+                                <>
+                                  <span className="text-slate-300">·</span>
+                                  <span className="font-mono text-[10px] text-blue-600 font-medium">#{p.beikeHouseCode}</span>
+                                </>
+                              )}
+                              {p.beikeUrl && (
+                                <a
+                                  href={p.beikeUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  title="在贝壳官网核对"
+                                  className="text-blue-500 hover:text-blue-700"
+                                >
+                                  <ExternalLink className="w-2.5 h-2.5 inline" />
+                                </a>
+                              )}
                               {p.images && p.images.length > 0 && (
                                 <span className="text-[10px] bg-indigo-50 text-indigo-600 px-1 rounded font-medium">
                                   {p.images.length}图
@@ -689,12 +742,36 @@ export const PropertyList: React.FC<PropertyListProps> = ({
                     </div>
                   )}
 
-                  <h3 className="text-sm font-bold text-slate-900 mb-1 line-clamp-1">{p.title}</h3>
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <h3 className="text-sm font-bold text-slate-900 line-clamp-1">{p.title}</h3>
+                    {(p.isBeikeSynced || p.beikeHouseCode) && (
+                      <span className="text-[9px] bg-blue-50 text-blue-700 border border-blue-200 font-bold px-1.5 py-0.2 rounded shrink-0">
+                        贝壳ACN
+                      </span>
+                    )}
+                  </div>
 
-                  <div className="text-xs text-slate-500 mb-3 flex items-center gap-1.5">
+                  <div className="text-xs text-slate-500 mb-3 flex items-center gap-1.5 flex-wrap">
                     <span className="font-semibold text-slate-700">{p.community}</span>
                     <span className="text-slate-300">·</span>
                     <span>{p.district}</span>
+                    {p.beikeHouseCode && (
+                      <>
+                        <span className="text-slate-300">·</span>
+                        <span className="font-mono text-[10px] text-blue-600 font-medium">#{p.beikeHouseCode}</span>
+                      </>
+                    )}
+                    {p.beikeUrl && (
+                      <a
+                        href={p.beikeUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="在贝壳官网核对"
+                        className="text-blue-500 hover:text-blue-700"
+                      >
+                        <ExternalLink className="w-3 h-3 inline" />
+                      </a>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-2.5 rounded-lg mb-3">

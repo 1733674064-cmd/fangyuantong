@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Building2, Copy, Check, Users, Edit2, Phone, MapPin, Tag } from 'lucide-react';
+import { X, Building2, Copy, Check, Users, Edit2, Phone, MapPin, Tag, Link2, ExternalLink } from 'lucide-react';
 import { Property } from '../types';
 
 interface PropertyDetailModalProps {
@@ -82,6 +82,36 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* Beike ACN Sync Status Banner */}
+          {(property.isBeikeSynced || property.beikeHouseCode) && (
+            <div className="p-3 bg-blue-50/90 border border-blue-200 rounded-xl flex flex-wrap items-center justify-between gap-2 text-xs">
+              <div className="flex items-center gap-2">
+                <span className="bg-blue-600 text-white font-bold text-[10px] px-1.5 py-0.5 rounded shadow-2xs">
+                  贝壳 ACN
+                </span>
+                <span className="text-blue-950 font-bold">
+                  贝壳找房 / A+ 系统同步在盘
+                </span>
+                {property.beikeHouseCode && (
+                  <span className="text-blue-700 font-mono text-[11px] bg-white/70 px-1.5 py-0.2 rounded border border-blue-200">
+                    编码: #{property.beikeHouseCode}
+                  </span>
+                )}
+              </div>
+              {property.beikeUrl && (
+                <a
+                  href={property.beikeUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-700 hover:text-blue-900 font-medium flex items-center gap-1 text-[11px] hover:underline"
+                >
+                  <span>在贝壳官网/A+核验此盘</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              )}
             </div>
           )}
 

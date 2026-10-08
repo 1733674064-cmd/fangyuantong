@@ -17,6 +17,7 @@ import { ReverseMatchModal } from './components/ReverseMatchModal';
 import { PropertyDetailModal } from './components/PropertyDetailModal';
 import { DataBackupModal } from './components/DataBackupModal';
 import { ShareModal } from './components/ShareModal';
+import { BeikeSyncModal } from './components/BeikeSyncModal';
 import { Property, Client, MatchResult, PropertyStatus, ClientStage } from './types';
 import {
   loadProperties,
@@ -59,6 +60,7 @@ export default function App() {
   const [reverseMatchProperty, setReverseMatchProperty] = useState<Property | null>(null);
   const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isBeikeSyncModalOpen, setIsBeikeSyncModalOpen] = useState(false);
 
   // Toast feedback
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null);
@@ -271,6 +273,7 @@ export default function App() {
         }}
         onOpenBackupModal={() => setIsBackupModalOpen(true)}
         onOpenShareModal={() => setIsShareModalOpen(true)}
+        onOpenBeikeSyncModal={() => setIsBeikeSyncModalOpen(true)}
         propertiesCount={properties.length}
         clientsCount={clients.length}
       />
@@ -307,6 +310,7 @@ export default function App() {
               setEditingProperty(null);
               setIsPropertyModalOpen(true);
             }}
+            onOpenBeikeSync={() => setIsBeikeSyncModalOpen(true)}
             onEditProperty={(property) => {
               setEditingProperty(property);
               setIsPropertyModalOpen(true);
@@ -458,6 +462,13 @@ export default function App() {
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
         sharedUrl={SHARED_APP_URL}
+      />
+
+      {/* 9. Beike / A+ Sync & OpenAPI Modal */}
+      <BeikeSyncModal
+        isOpen={isBeikeSyncModalOpen}
+        onClose={() => setIsBeikeSyncModalOpen(false)}
+        onSaveProperty={handleSaveProperty}
       />
     </div>
   );

@@ -12,6 +12,7 @@ import {
   X,
   FileSpreadsheet,
   Download,
+  Link2,
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -21,6 +22,7 @@ interface HeaderProps {
   onOpenAddClient: () => void;
   onOpenBackupModal: () => void;
   onOpenShareModal: () => void;
+  onOpenBeikeSyncModal: () => void;
   propertiesCount: number;
   clientsCount: number;
 }
@@ -32,6 +34,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAddClient,
   onOpenBackupModal,
   onOpenShareModal,
+  onOpenBeikeSyncModal,
   propertiesCount,
   clientsCount,
 }) => {
@@ -116,6 +119,17 @@ export const Header: React.FC<HeaderProps> = ({
 
             {/* Zone 3: Quick Action Buttons */}
             <div className="flex items-center gap-1.5 sm:gap-2">
+              {/* Beike ACN Sync Button */}
+              <button
+                onClick={onOpenBeikeSyncModal}
+                title="同步贝壳找房 / A+ 房源"
+                className="px-2 sm:px-2.5 py-1.5 text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1 border border-blue-200 shadow-2xs cursor-pointer"
+              >
+                <Link2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                <span className="hidden sm:inline">贝壳A+同步</span>
+                <span className="sm:hidden text-[11px]">贝壳</span>
+              </button>
+
               {/* Share Button */}
               <button
                 onClick={onOpenShareModal}
@@ -177,7 +191,18 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
               快捷工具与数据管理
             </div>
-            <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  onOpenBeikeSyncModal();
+                }}
+                className="flex items-center gap-2 p-2.5 rounded-lg bg-blue-50/80 hover:bg-blue-100 border border-blue-200 text-blue-900 font-semibold cursor-pointer"
+              >
+                <Link2 className="w-4 h-4 text-blue-600" />
+                <span>贝壳 / A+ 房源同步</span>
+              </button>
+
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);

@@ -38,6 +38,10 @@ export interface Property {
   status: PropertyStatus;
   viewCount?: number;
   notes?: string;
+  beikeHouseCode?: string; // 贝壳 / A+ 房源编码 (例如: 105108283921)
+  beikeUrl?: string; // 贝壳原始房源网页链接或 A+ 分享地址
+  isBeikeSynced?: boolean; // 标记是否同步自贝壳 A+
+  lastSyncedAt?: string; // 最近同步或核验时间
   createdAt: string;
   updatedAt: string;
 }

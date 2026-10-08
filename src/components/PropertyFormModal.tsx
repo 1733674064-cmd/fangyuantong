@@ -12,9 +12,11 @@ import {
   Loader2,
   Maximize2,
   CheckCircle2,
+  Link2,
 } from 'lucide-react';
 import { Property, TransactionType, PropertyStatus, DecorationType } from '../types';
 import { COMMON_TAGS, DISTRICT_OPTIONS } from '../utils/mockData';
+import { parseBeikeShareContent } from '../utils/beikeParser';
 
 interface PropertyFormModalProps {
   isOpen: boolean;
@@ -63,6 +65,29 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
   const [isRecognizing, setIsRecognizing] = useState(false);
   const [recognitionError, setRecognitionError] = useState<string | null>(null);
   const [recognitionSuccess, setRecognitionSuccess] = useState<string | null>(null);
+
+  // Beike Quick Paste Parser State
+  const [beikeInput, setBeikeInput] = useState('');
+  const [beikeSuccess, setBeikeSuccess] = useState<string | null>(null);
+  const [beikeError, setBeikeError] = useState<string | null>(null);
+
+  const handleParseBeike = () => {
+    if (!beikeInput.trim()) return;
+    const res = parseBeikeShareContent(beikeInput);
+    if (res.success && res.data) {
+      setFormData((prev) => ({
+        ...prev,
+        ...res.data,
+        isBeikeSynced: true,
+      }));
+      setBeikeSuccess(`已成功从贝壳/A+提取【${res.data.community || '房源'}】所有关键参数！`);
+      setBeikeError(null);
+      setBeikeInput('');
+      setTimeout(() => setBeikeSuccess(null), 3500);
+    } else {
+      setBeikeError(res.message || '未识别到有效的贝壳房源信息');
+    }
+  };
 
   // Image Preview Modal
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
@@ -355,6 +380,64 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="overflow-y-auto p-6 space-y-6 flex-1">
+          {/* Beike / A+ Fast Paste Parser Banner */}
+          <div className="bg-blue-50/70 border border-blue-200 rounded-xl p-4 shadow-2xs space-y-2.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 font-bold text-blue-950 text-xs">
+                <Link2 className="w-4 h-4 text-blue-600" />
+                <span>贝壳找房 / A+ 链接口令一键粘贴快速解析回填</span>
+                <span className="text-[10px] bg-blue-600 text-white px-1.5 py-0.2 rounded font-normal">
+                  ACN直通
+                </span>
+              </div>
+              <span className="text-[11px] text-blue-600 hidden sm:inline">
+                支持直接粘贴贝壳链接或分享文案
+              </span>
+            </div>
+
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={beikeInput}
+                onChange={(e) => setBeikeInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleParseBeike();
+                  }
+                }}
+                placeholder="在此粘贴贝壳App或A+分享链接/口令（例如包含小区、价格、平米或 ke.com 网址）"
+                className="flex-1 px-3 py-2 bg-white border border-blue-200 rounded-lg text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+              />
+              <button
+                type="button"
+                onClick={handleParseBeike}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold whitespace-nowrap transition-colors shadow-2xs cursor-pointer flex items-center gap-1"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>解析回填</span>
+              </button>
+            </div>
+
+            {beikeSuccess && (
+              <div className="p-2 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-800 flex items-center justify-between">
+                <span>{beikeSuccess}</span>
+                <button type="button" onClick={() => setBeikeSuccess(null)} className="text-emerald-500">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+
+            {beikeError && (
+              <div className="p-2 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-800 flex items-center justify-between">
+                <span>{beikeError}</span>
+                <button type="button" onClick={() => setBeikeError(null)} className="text-rose-500">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+          </div>
+
           {/* AI Screenshot Recognition Feature Banner */}
           <div className="bg-gradient-to-r from-indigo-50 via-purple-50 to-blue-50 border border-indigo-200/80 rounded-xl p-4 shadow-2xs">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
